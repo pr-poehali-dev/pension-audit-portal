@@ -3,6 +3,8 @@ import Icon from "@/components/ui/icon";
 
 const TABS_API = "https://functions.poehali.dev/1b2432d8-8d89-4323-9619-a7a916717197";
 const MEDIA_API = "https://functions.poehali.dev/f7c2a792-6b23-43ba-82db-06b15e63050a";
+const AUTH_API = "https://functions.poehali.dev/33a372ea-9c2d-46ca-ab71-9788b3c40878";
+const SESSION_KEY = "pension_admin_auth";
 
 const TAB_LABELS: Record<string, string> = {
   north: "Северяне",
@@ -20,7 +22,6 @@ interface TabData {
   conditions: string[];
   mistakes: string[];
   badge: string;
-  updated_at?: string;
 }
 
 interface MediaFile {
@@ -33,6 +34,13 @@ interface MediaFile {
 }
 
 export default function AdminPanel({ onClose }: { onClose: () => void }) {
+  // Auth state — все хуки всегда наверху
+  const [authed, setAuthed] = useState(() => sessionStorage.getItem(SESSION_KEY) === "1");
+  const [password, setPassword] = useState("");
+  const [authError, setAuthError] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
+
+  // Panel state
   const [activeTab, setActiveTab] = useState("north");
   const [tabData, setTabData] = useState<TabData | null>(null);
   const [media, setMedia] = useState<MediaFile[]>([]);
@@ -42,9 +50,30 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    if (!authed) return;
     loadTab(activeTab);
     loadMedia(activeTab);
-  }, [activeTab]);
+  }, [activeTab, authed]);
+
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
+    setAuthLoading(true);
+    setAuthError("");
+    const res = await fetch(AUTH_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password }),
+    });
+    const data = await res.json();
+    setAuthLoading(false);
+    if (data.ok) {
+      sessionStorage.setItem(SESSION_KEY, "1");
+      setAuthed(true);
+    } else {
+      setAuthError("Неверный пароль. Попробуйте ещё раз.");
+      setPassword("");
+    }
+  }
 
   async function loadTab(tabId: string) {
     setTabData(null);
@@ -144,6 +173,71 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
     setTabData({ ...tabData, mistakes: tabData.mistakes.filter((_, idx) => idx !== i) });
   }
 
+  function handleLogout() {
+    sessionStorage.removeItem(SESSION_KEY);
+    setAuthed(false);
+    setPassword("");
+  }
+
+  // ── Форма входа ──────────────────────────────────────────────
+  if (!authed) {
+    return (
+      <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center px-4">
+        <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl p-8">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-[hsl(var(--navy))] rounded-xl flex items-center justify-center">
+                <Icon name="Lock" size={18} className="text-[hsl(var(--gold))]" />
+              </div>
+              <div>
+                <h2 className="font-display text-xl font-bold text-[hsl(var(--navy))]">Вход в панель</h2>
+                <p className="text-xs text-gray-400">Введите пароль администратора</p>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+            >
+              <Icon name="X" size={16} className="text-gray-500" />
+            </button>
+          </div>
+
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">Пароль</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                autoFocus
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-[hsl(var(--navy))] focus:outline-none focus:border-[hsl(var(--gold))] transition-colors"
+              />
+              {authError && (
+                <p className="text-xs text-red-500 mt-2 flex items-center gap-1.5">
+                  <Icon name="AlertCircle" size={12} /> {authError}
+                </p>
+              )}
+            </div>
+            <button
+              type="submit"
+              disabled={authLoading || !password}
+              className="w-full py-3 bg-[hsl(var(--navy))] text-white font-bold rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              <Icon
+                name={authLoading ? "Loader" : "LogIn"}
+                size={16}
+                className={authLoading ? "animate-spin" : ""}
+              />
+              {authLoading ? "Проверяю..." : "Войти"}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Панель редактирования ─────────────────────────────────────
   return (
     <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-start justify-center overflow-y-auto py-6 px-4">
       <div className="bg-white rounded-3xl w-full max-w-4xl shadow-2xl">
@@ -159,13 +253,24 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
               <p className="text-xs text-gray-400">Изменения сохраняются в базе данных</p>
             </div>
           </div>
-          <button onClick={onClose} className="w-9 h-9 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors">
-            <Icon name="X" size={18} className="text-gray-500" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-1.5 px-3 py-2 text-xs text-gray-400 hover:text-red-500 border border-gray-200 rounded-xl hover:border-red-200 transition-all"
+            >
+              <Icon name="LogOut" size={13} /> Выйти
+            </button>
+            <button
+              onClick={onClose}
+              className="w-9 h-9 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+            >
+              <Icon name="X" size={18} className="text-gray-500" />
+            </button>
+          </div>
         </div>
 
         {/* Tab selector */}
-        <div className="px-8 pt-5 pb-0 flex gap-2 overflow-x-auto border-b border-gray-100 pb-0">
+        <div className="px-8 pt-5 flex gap-2 overflow-x-auto border-b border-gray-100">
           {Object.entries(TAB_LABELS).map(([id, label]) => (
             <button
               key={id}
@@ -183,7 +288,7 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
 
         {!tabData ? (
           <div className="p-12 flex items-center justify-center">
-            <div className="w-8 h-8 border-3 border-[hsl(var(--navy))] border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 border-4 border-[hsl(var(--navy))] border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
           <div className="px-8 py-6 space-y-6">
@@ -234,7 +339,10 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
                   <Icon name="CheckCircle" size={13} className="text-[hsl(var(--gold))]" />
                   Условия назначения
                 </label>
-                <button onClick={addCondition} className="text-xs text-[hsl(var(--navy))] border border-[hsl(var(--navy))]/20 px-3 py-1 rounded-lg hover:bg-[hsl(var(--navy))] hover:text-white transition-all flex items-center gap-1">
+                <button
+                  onClick={addCondition}
+                  className="text-xs text-[hsl(var(--navy))] border border-[hsl(var(--navy))]/20 px-3 py-1 rounded-lg hover:bg-[hsl(var(--navy))] hover:text-white transition-all flex items-center gap-1"
+                >
                   <Icon name="Plus" size={12} /> Добавить
                 </button>
               </div>
@@ -247,7 +355,10 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
                       onChange={(e) => updateCondition(i, e.target.value)}
                       className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:border-[hsl(var(--gold))] transition-colors"
                     />
-                    <button onClick={() => removeCondition(i)} className="w-9 h-9 mt-1 bg-red-50 hover:bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors">
+                    <button
+                      onClick={() => removeCondition(i)}
+                      className="w-9 h-9 mt-1 bg-red-50 hover:bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors"
+                    >
                       <Icon name="Trash2" size={14} className="text-red-400" />
                     </button>
                   </div>
@@ -262,7 +373,10 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
                   <Icon name="AlertTriangle" size={13} className="text-red-400" />
                   Частые ошибки СФР
                 </label>
-                <button onClick={addMistake} className="text-xs text-[hsl(var(--navy))] border border-[hsl(var(--navy))]/20 px-3 py-1 rounded-lg hover:bg-[hsl(var(--navy))] hover:text-white transition-all flex items-center gap-1">
+                <button
+                  onClick={addMistake}
+                  className="text-xs text-[hsl(var(--navy))] border border-[hsl(var(--navy))]/20 px-3 py-1 rounded-lg hover:bg-[hsl(var(--navy))] hover:text-white transition-all flex items-center gap-1"
+                >
                   <Icon name="Plus" size={12} /> Добавить
                 </button>
               </div>
@@ -277,7 +391,10 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
                       onChange={(e) => updateMistake(i, e.target.value)}
                       className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:border-red-300 transition-colors"
                     />
-                    <button onClick={() => removeMistake(i)} className="w-9 h-9 mt-1 bg-red-50 hover:bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors">
+                    <button
+                      onClick={() => removeMistake(i)}
+                      className="w-9 h-9 mt-1 bg-red-50 hover:bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors"
+                    >
                       <Icon name="Trash2" size={14} className="text-red-400" />
                     </button>
                   </div>
@@ -339,10 +456,18 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
                         <p className="text-xs text-gray-600 truncate">{f.file_name}</p>
                       </div>
                       <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <a href={f.file_url} target="_blank" rel="noreferrer" className="w-7 h-7 bg-white rounded-lg shadow flex items-center justify-center hover:bg-gray-50">
+                        <a
+                          href={f.file_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="w-7 h-7 bg-white rounded-lg shadow flex items-center justify-center hover:bg-gray-50"
+                        >
                           <Icon name="ExternalLink" size={12} className="text-gray-600" />
                         </a>
-                        <button onClick={() => deleteMedia(f.id)} className="w-7 h-7 bg-white rounded-lg shadow flex items-center justify-center hover:bg-red-50">
+                        <button
+                          onClick={() => deleteMedia(f.id)}
+                          className="w-7 h-7 bg-white rounded-lg shadow flex items-center justify-center hover:bg-red-50"
+                        >
                           <Icon name="Trash2" size={12} className="text-red-400" />
                         </button>
                       </div>
@@ -369,7 +494,10 @@ export default function AdminPanel({ onClose }: { onClose: () => void }) {
                 <Icon name={saving ? "Loader" : saved ? "Check" : "Save"} size={16} className={saving ? "animate-spin" : ""} />
                 {saving ? "Сохраняю..." : saved ? "Сохранено!" : "Сохранить изменения"}
               </button>
-              <button onClick={onClose} className="px-6 py-3.5 border border-gray-200 text-gray-500 font-semibold rounded-xl hover:bg-gray-50 transition-all text-sm">
+              <button
+                onClick={onClose}
+                className="px-6 py-3.5 border border-gray-200 text-gray-500 font-semibold rounded-xl hover:bg-gray-50 transition-all text-sm"
+              >
                 Закрыть
               </button>
             </div>
