@@ -7,6 +7,7 @@ const MEDIA_API = "https://functions.poehali.dev/f7c2a792-6b23-43ba-82db-06b15e6
 
 const HERO_IMAGE = "https://cdn.poehali.dev/projects/5094cf99-2172-42bb-b8d1-3dc41e02829d/files/2febaeb5-009a-4d26-a6fb-577c02edca4d.jpg";
 const TEAM_IMAGE = "https://cdn.poehali.dev/projects/5094cf99-2172-42bb-b8d1-3dc41e02829d/files/3c6daaf5-3487-4374-8549-2ec9cad2aded.jpg";
+const LOGO_IMAGE = "https://cdn.poehali.dev/projects/5094cf99-2172-42bb-b8d1-3dc41e02829d/files/d49aa387-2055-4a85-9b8f-bde3b30f0822.jpg";
 
 function useScrollAnimation() {
   useEffect(() => {
@@ -213,6 +214,81 @@ const pensionTabs = [
     badge: "За выслугу лет",
     badgeColor: "navy",
   },
+  {
+    id: "zhkh",
+    label: "ЖКХ",
+    icon: "Home",
+    title: "Проверка начислений по ЖКХ",
+    subtitle: "Аудит квитанций и тарифов",
+    description: "Управляющие компании и ресурсоснабжающие организации нередко допускают ошибки в начислениях — применяют неверные тарифы, начисляют лишние услуги или не учитывают льготы. Мы проверяем каждую строку квитанции.",
+    conditions: [
+      "Проверка правильности применения тарифов на все виды коммунальных услуг",
+      "Контроль корректности начислений за отопление, ГВС, ХВС, электроэнергию",
+      "Проверка начислений за содержание и ремонт общего имущества",
+      "Анализ применения льгот и субсидий — все ли скидки учтены",
+      "Проверка задолженности: законность пеней и штрафов",
+      "Сравнение нормативного и фактического потребления при отсутствии счётчика",
+    ],
+    mistakes: [
+      "УК применяет тариф прошлого периода без уведомления жильцов",
+      "Площадь квартиры указана неверно — завышены все объёмы начислений",
+      "Льготы пенсионера или инвалида не применены автоматически",
+      "Повторное начисление за уже оплаченные периоды",
+      "Некорректный расчёт ОДН (общедомовых нужд)",
+    ],
+    badge: "Аудит квитанций ЖКХ",
+    badgeColor: "green",
+  },
+  {
+    id: "contracts",
+    label: "Договоры",
+    icon: "FileCheck",
+    title: "Проверка договоров и документов",
+    subtitle: "Юридический анализ перед подписанием",
+    description: "Договор аренды, купли-продажи, оказания услуг, трудовой договор — каждый документ содержит условия, которые могут ущемлять ваши права. Мы анализируем текст и выявляем скрытые риски до подписания.",
+    conditions: [
+      "Договоры купли-продажи недвижимости и транспорта",
+      "Договоры аренды жилых и нежилых помещений",
+      "Трудовые договоры и дополнительные соглашения",
+      "Договоры оказания услуг, подряда, займа",
+      "Кредитные договоры и договоры с МФО",
+      "Наследственные документы, завещания, дарственные",
+    ],
+    mistakes: [
+      "Скрытые штрафные санкции в теле договора мелким шрифтом",
+      "Односторонний порядок изменения условий в пользу компании",
+      "Отсутствие ответственности исполнителя за нарушение сроков",
+      "Незаконные условия об ограничении прав потребителя",
+      "Неверно указанные реквизиты сторон — договор может быть признан недействительным",
+    ],
+    badge: "Юридический аудит",
+    badgeColor: "amber",
+  },
+  {
+    id: "svo",
+    label: "Участникам СВО",
+    icon: "Star",
+    title: "Участникам СВО",
+    subtitle: "Выплаты, льготы и оформление документов",
+    description: "Военнослужащие, участники специальной военной операции и члены их семей имеют право на широкий спектр выплат и льгот. Мы помогаем собрать документы, оформить заявления и получить все положенные по закону средства.",
+    conditions: [
+      "Единовременная выплата при ранении (лёгкое — 3 млн ₽, тяжёлое — от 3 до 5 млн ₽)",
+      "Страховые выплаты по линии Росгвардии и МО РФ при травмах и заболеваниях",
+      "Региональные выплаты — размер зависит от субъекта РФ, до 5 млн ₽",
+      "Выплаты семьям погибших — 5 млн ₽ федеральных + региональные",
+      "Надбавки и доплаты за государственные награды (ордена, медали)",
+      "Льготы на ЖКХ, транспортный налог, имущественный налог для ветеранов",
+    ],
+    mistakes: [
+      "Неверно оформлена справка о ранении — отказ в страховой выплате",
+      "Региональная выплата не получена из-за отсутствия заявления в нужный орган",
+      "Награды не учтены при расчёте пенсии или надбавок",
+      "Военно-врачебная комиссия занизила степень тяжести ранения",
+      "Семья не оформила статус членов семьи погибшего военнослужащего",
+    ],
+    badge: "СВО: выплаты и льготы",
+    badgeColor: "red",
+  },
 ];
 
 const reviews = [
@@ -342,11 +418,21 @@ export default function Index() {
 
       {adminOpen && <AdminPanel onClose={() => setAdminOpen(false)} />}
 
+      {/* Floating logo badge — bottom-left corner */}
+      <div className="fixed bottom-6 left-6 z-40 hidden md:flex items-center gap-2.5 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-2xl px-4 py-2.5 shadow-lg hover:shadow-xl transition-all cursor-pointer"
+        onClick={() => scrollTo("#hero")}>
+        <img src={LOGO_IMAGE} alt="логотип" className="w-8 h-8 rounded-lg object-cover" />
+        <div>
+          <p className="font-display text-sm font-bold text-[hsl(var(--navy))] leading-none">ПенсионАудит</p>
+          <p className="text-[10px] text-[hsl(var(--gold))] font-semibold mt-0.5">защита ваших прав</p>
+        </div>
+      </div>
+
       {/* NAV */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[hsl(var(--navy))]/95 backdrop-blur-sm border-b border-white/10">
         <div className="container mx-auto px-4 flex items-center justify-between h-16">
-          <div className="flex items-center gap-2">
-            <Icon name="Scale" size={22} className="text-[hsl(var(--gold))]" />
+          <div className="flex items-center gap-3">
+            <img src={LOGO_IMAGE} alt="ПенсионАудит" className="w-9 h-9 rounded-lg object-cover border border-[hsl(var(--gold))]/30" />
             <span className="font-display text-xl font-semibold text-white">
               Пенсион<span className="text-[hsl(var(--gold))]">Аудит</span>
             </span>
@@ -558,10 +644,10 @@ export default function Index() {
           <div className="text-center mb-14 animate-on-scroll">
             <p className="text-xs font-semibold tracking-widest text-[hsl(var(--gold))] uppercase mb-3">Специализация</p>
             <h2 className="font-display text-4xl md:text-5xl font-bold text-[hsl(var(--navy))] mb-4 gold-line-center">
-              Виды льготной пенсии
+              Направления работы
             </h2>
             <p className="text-gray-500 max-w-xl mx-auto mt-6">
-              Выберите категорию — узнайте условия, типичные ошибки СФР и как мы помогаем их исправить
+              Выберите категорию — узнайте условия, типичные ошибки и как мы помогаем их исправить
             </p>
           </div>
 
@@ -573,12 +659,24 @@ export default function Index() {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold transition-all whitespace-nowrap border ${
-                    activeTab === tab.id
-                      ? "bg-[hsl(var(--navy))] text-white border-[hsl(var(--navy))] shadow-lg"
-                      : "bg-white text-[hsl(var(--navy))] border-gray-200 hover:border-[hsl(var(--navy))]/40 hover:bg-gray-50"
+                    tab.id === "svo"
+                      ? activeTab === "svo"
+                        ? "bg-red-700 text-white border-red-700 shadow-lg"
+                        : "bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
+                      : activeTab === tab.id
+                        ? "bg-[hsl(var(--navy))] text-white border-[hsl(var(--navy))] shadow-lg"
+                        : "bg-white text-[hsl(var(--navy))] border-gray-200 hover:border-[hsl(var(--navy))]/40 hover:bg-gray-50"
                   }`}
                 >
-                  <Icon name={tab.icon} size={16} className={activeTab === tab.id ? "text-[hsl(var(--gold))]" : "text-gray-400"} />
+                  <Icon
+                    name={tab.icon}
+                    size={16}
+                    className={
+                      tab.id === "svo"
+                        ? activeTab === "svo" ? "text-yellow-300" : "text-red-500"
+                        : activeTab === tab.id ? "text-[hsl(var(--gold))]" : "text-gray-400"
+                    }
+                  />
                   {tab.label}
                 </button>
               ))}
@@ -616,24 +714,32 @@ export default function Index() {
               const badge = data?.badge ?? tab.badge;
               const mediaFiles = dbMedia[tab.id] ?? [];
 
+              const isSvo = tab.id === "svo";
+
               return (
                 <div key={tab.id} className="animate-on-scroll" id={`print-tab-${tab.id}`}>
-                  <div className="bg-[hsl(var(--cream))] rounded-3xl overflow-hidden border border-gray-100 shadow-sm">
+                  <div className={`rounded-3xl overflow-hidden border shadow-sm ${isSvo ? "bg-red-50 border-red-100" : "bg-[hsl(var(--cream))] border-gray-100"}`}>
                     {/* Header */}
-                    <div className="bg-[hsl(var(--navy))] px-8 md:px-12 py-10">
+                    <div className={`px-8 md:px-12 py-10 ${isSvo ? "bg-gradient-to-r from-red-900 to-red-700" : "bg-[hsl(var(--navy))]"}`}>
+                      {isSvo && (
+                        <div className="flex items-center gap-2 mb-5">
+                          <span className="text-2xl">🇷🇺</span>
+                          <span className="text-white/80 text-sm font-semibold tracking-wider uppercase">Специальный раздел</span>
+                        </div>
+                      )}
                       <div className="flex flex-col md:flex-row md:items-center gap-6">
-                        <div className="w-16 h-16 bg-[hsl(var(--gold))]/20 rounded-2xl flex items-center justify-center flex-shrink-0">
-                          <Icon name={tab.icon} size={30} className="text-[hsl(var(--gold))]" />
+                        <div className={`w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0 ${isSvo ? "bg-white/15" : "bg-[hsl(var(--gold))]/20"}`}>
+                          <Icon name={tab.icon} size={30} className={isSvo ? "text-yellow-300" : "text-[hsl(var(--gold))]"} />
                         </div>
                         <div className="flex-1">
-                          <div className="inline-block px-3 py-1 bg-[hsl(var(--gold))]/20 border border-[hsl(var(--gold))]/30 rounded-full text-[hsl(var(--gold))] text-xs font-semibold mb-3">
+                          <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mb-3 ${isSvo ? "bg-yellow-400/20 border border-yellow-400/40 text-yellow-300" : "bg-[hsl(var(--gold))]/20 border border-[hsl(var(--gold))]/30 text-[hsl(var(--gold))]"}`}>
                             {badge}
                           </div>
                           <h3 className="font-display text-3xl font-bold text-white mb-1">{title}</h3>
-                          <p className="text-blue-200 text-sm">{subtitle}</p>
+                          <p className={`text-sm ${isSvo ? "text-red-200" : "text-blue-200"}`}>{subtitle}</p>
                         </div>
                       </div>
-                      <p className="text-blue-100 mt-6 leading-relaxed text-sm md:text-base">{description}</p>
+                      <p className={`mt-6 leading-relaxed text-sm md:text-base ${isSvo ? "text-red-100" : "text-blue-100"}`}>{description}</p>
                     </div>
 
                     {/* Body */}
@@ -951,8 +1057,8 @@ export default function Index() {
       {/* FOOTER */}
       <footer className="bg-[hsl(var(--navy))]/90 border-t border-white/10 py-8">
         <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Icon name="Scale" size={18} className="text-[hsl(var(--gold))]" />
+          <div className="flex items-center gap-3">
+            <img src={LOGO_IMAGE} alt="логотип" className="w-8 h-8 rounded-lg object-cover border border-[hsl(var(--gold))]/30" />
             <span className="font-display text-lg text-white">
               Пенсион<span className="text-[hsl(var(--gold))]">Аудит</span>
             </span>

@@ -12,6 +12,9 @@ const TAB_LABELS: Record<string, string> = {
   teachers: "Учителя",
   doctors: "Медики",
   mvd: "МВД / МЧС",
+  zhkh: "ЖКХ",
+  contracts: "Договоры",
+  svo: "Участникам СВО",
 };
 
 interface TabData {
