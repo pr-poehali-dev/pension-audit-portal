@@ -1,5 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import Icon from "@/components/ui/icon";
+import AdminPanel from "@/components/AdminPanel";
+
+const TABS_API = "https://functions.poehali.dev/1b2432d8-8d89-4323-9619-a7a916717197";
+const MEDIA_API = "https://functions.poehali.dev/f7c2a792-6b23-43ba-82db-06b15e63050a";
 
 const HERO_IMAGE = "https://cdn.poehali.dev/projects/5094cf99-2172-42bb-b8d1-3dc41e02829d/files/2febaeb5-009a-4d26-a6fb-577c02edca4d.jpg";
 const TEAM_IMAGE = "https://cdn.poehali.dev/projects/5094cf99-2172-42bb-b8d1-3dc41e02829d/files/3c6daaf5-3487-4374-8549-2ec9cad2aded.jpg";
@@ -258,6 +262,24 @@ const faqItems = [
   },
 ];
 
+interface TabData {
+  tab_id: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  conditions: string[];
+  mistakes: string[];
+  badge: string;
+}
+
+interface MediaFile {
+  id: number;
+  tab_id: string;
+  file_url: string;
+  file_name: string;
+  file_type: string;
+}
+
 export default function Index() {
   useScrollAnimation();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -275,6 +297,33 @@ export default function Index() {
 
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState("north");
+  const [adminOpen, setAdminOpen] = useState(false);
+
+  // Данные вкладок из БД
+  const [dbTabs, setDbTabs] = useState<Record<string, TabData>>({});
+  const [dbMedia, setDbMedia] = useState<Record<string, MediaFile[]>>({});
+  const [tabsLoading, setTabsLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(TABS_API)
+      .then((r) => r.json())
+      .then((data: TabData[]) => {
+        const map: Record<string, TabData> = {};
+        data.forEach((t) => { map[t.tab_id] = t; });
+        setDbTabs(map);
+        setTabsLoading(false);
+      })
+      .catch(() => setTabsLoading(false));
+  }, [adminOpen]);
+
+  useEffect(() => {
+    if (!activeTab) return;
+    fetch(`${MEDIA_API}?tab_id=${activeTab}`)
+      .then((r) => r.json())
+      .then((data: MediaFile[]) => {
+        setDbMedia((prev) => ({ ...prev, [activeTab]: data }));
+      });
+  }, [activeTab, adminOpen]);
 
   const [calc, setCalc] = useState({ age: 60, salary: 50000, years: 30 });
   const pension = Math.round(
@@ -290,6 +339,8 @@ export default function Index() {
 
   return (
     <div className="min-h-screen font-body bg-[hsl(var(--background))]">
+
+      {adminOpen && <AdminPanel onClose={() => setAdminOpen(false)} />}
 
       {/* NAV */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[hsl(var(--navy))]/95 backdrop-blur-sm border-b border-white/10">
@@ -514,9 +565,9 @@ export default function Index() {
             </p>
           </div>
 
-          {/* Tab buttons */}
-          <div className="animate-on-scroll mb-8 overflow-x-auto pb-2">
-            <div className="flex gap-2 min-w-max mx-auto w-fit">
+          {/* Tab buttons + edit/print controls */}
+          <div className="animate-on-scroll mb-8">
+            <div className="flex flex-wrap gap-2 justify-center mb-4">
               {pensionTabs.map((tab) => (
                 <button
                   key={tab.id}
@@ -532,79 +583,148 @@ export default function Index() {
                 </button>
               ))}
             </div>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setAdminOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 text-xs font-semibold border border-[hsl(var(--navy))]/20 text-[hsl(var(--navy))] rounded-xl hover:bg-[hsl(var(--navy))] hover:text-white transition-all"
+              >
+                <Icon name="Pencil" size={13} /> Редактировать
+              </button>
+              <button
+                onClick={() => window.print()}
+                className="flex items-center gap-2 px-4 py-2 text-xs font-semibold border border-gray-200 text-gray-600 rounded-xl hover:bg-gray-100 transition-all"
+              >
+                <Icon name="Printer" size={13} /> Печать
+              </button>
+            </div>
           </div>
 
           {/* Tab content */}
-          {pensionTabs.map((tab) =>
-            activeTab !== tab.id ? null : (
-              <div key={tab.id} className="animate-on-scroll">
-                <div className="bg-[hsl(var(--cream))] rounded-3xl overflow-hidden border border-gray-100 shadow-sm">
-                  {/* Header */}
-                  <div className="bg-[hsl(var(--navy))] px-8 md:px-12 py-10">
-                    <div className="flex flex-col md:flex-row md:items-center gap-6">
-                      <div className="w-16 h-16 bg-[hsl(var(--gold))]/20 rounded-2xl flex items-center justify-center flex-shrink-0">
-                        <Icon name={tab.icon} size={30} className="text-[hsl(var(--gold))]" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="inline-block px-3 py-1 bg-[hsl(var(--gold))]/20 border border-[hsl(var(--gold))]/30 rounded-full text-[hsl(var(--gold))] text-xs font-semibold mb-3">
-                          {tab.badge}
+          {tabsLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="w-10 h-10 border-4 border-[hsl(var(--navy))] border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : (
+            pensionTabs.map((tab) => {
+              if (activeTab !== tab.id) return null;
+              const data = dbTabs[tab.id];
+              const title = data?.title ?? tab.title;
+              const subtitle = data?.subtitle ?? tab.subtitle;
+              const description = data?.description ?? tab.description;
+              const conditions = data?.conditions ?? tab.conditions;
+              const mistakes = data?.mistakes ?? tab.mistakes;
+              const badge = data?.badge ?? tab.badge;
+              const mediaFiles = dbMedia[tab.id] ?? [];
+
+              return (
+                <div key={tab.id} className="animate-on-scroll" id={`print-tab-${tab.id}`}>
+                  <div className="bg-[hsl(var(--cream))] rounded-3xl overflow-hidden border border-gray-100 shadow-sm">
+                    {/* Header */}
+                    <div className="bg-[hsl(var(--navy))] px-8 md:px-12 py-10">
+                      <div className="flex flex-col md:flex-row md:items-center gap-6">
+                        <div className="w-16 h-16 bg-[hsl(var(--gold))]/20 rounded-2xl flex items-center justify-center flex-shrink-0">
+                          <Icon name={tab.icon} size={30} className="text-[hsl(var(--gold))]" />
                         </div>
-                        <h3 className="font-display text-3xl font-bold text-white mb-1">{tab.title}</h3>
-                        <p className="text-blue-200 text-sm">{tab.subtitle}</p>
+                        <div className="flex-1">
+                          <div className="inline-block px-3 py-1 bg-[hsl(var(--gold))]/20 border border-[hsl(var(--gold))]/30 rounded-full text-[hsl(var(--gold))] text-xs font-semibold mb-3">
+                            {badge}
+                          </div>
+                          <h3 className="font-display text-3xl font-bold text-white mb-1">{title}</h3>
+                          <p className="text-blue-200 text-sm">{subtitle}</p>
+                        </div>
+                      </div>
+                      <p className="text-blue-100 mt-6 leading-relaxed text-sm md:text-base">{description}</p>
+                    </div>
+
+                    {/* Body */}
+                    <div className="px-8 md:px-12 py-10 grid md:grid-cols-2 gap-10">
+                      <div>
+                        <h4 className="font-display text-xl font-bold text-[hsl(var(--navy))] mb-5 flex items-center gap-2">
+                          <Icon name="CheckCircle" size={18} className="text-[hsl(var(--gold))]" />
+                          Условия назначения
+                        </h4>
+                        <ul className="space-y-3">
+                          {conditions.map((c, i) => (
+                            <li key={i} className="flex items-start gap-3 text-sm text-gray-700">
+                              <span className="w-5 h-5 bg-[hsl(var(--gold))]/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 text-[hsl(var(--gold))] text-xs font-bold">
+                                {i + 1}
+                              </span>
+                              {c}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <div>
+                        <h4 className="font-display text-xl font-bold text-[hsl(var(--navy))] mb-5 flex items-center gap-2">
+                          <Icon name="AlertTriangle" size={18} className="text-red-400" />
+                          Частые ошибки СФР
+                        </h4>
+                        <ul className="space-y-3">
+                          {mistakes.map((m, i) => (
+                            <li key={i} className="flex items-start gap-3 text-sm text-gray-700 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
+                              <Icon name="X" size={14} className="text-red-400 flex-shrink-0 mt-0.5" />
+                              {m}
+                            </li>
+                          ))}
+                        </ul>
+
+                        <div className="mt-6 bg-[hsl(var(--gold))]/10 border border-[hsl(var(--gold))]/25 rounded-2xl p-5">
+                          <p className="text-sm text-gray-700 mb-4">
+                            Узнайте, правильно ли оформлен ваш стаж — бесплатная первичная консультация
+                          </p>
+                          <button
+                            onClick={() => scrollTo("#contacts")}
+                            className="w-full py-3 bg-[hsl(var(--navy))] text-white font-semibold rounded-xl hover:opacity-90 transition-all text-sm"
+                          >
+                            Проверить мои права
+                          </button>
+                        </div>
                       </div>
                     </div>
-                    <p className="text-blue-100 mt-6 leading-relaxed text-sm md:text-base">{tab.description}</p>
-                  </div>
 
-                  {/* Body */}
-                  <div className="px-8 md:px-12 py-10 grid md:grid-cols-2 gap-10">
-                    <div>
-                      <h4 className="font-display text-xl font-bold text-[hsl(var(--navy))] mb-5 flex items-center gap-2">
-                        <Icon name="CheckCircle" size={18} className="text-[hsl(var(--gold))]" />
-                        Условия назначения
-                      </h4>
-                      <ul className="space-y-3">
-                        {tab.conditions.map((c, i) => (
-                          <li key={i} className="flex items-start gap-3 text-sm text-gray-700">
-                            <span className="w-5 h-5 bg-[hsl(var(--gold))]/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 text-[hsl(var(--gold))] text-xs font-bold">
-                              {i + 1}
-                            </span>
-                            {c}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div>
-                      <h4 className="font-display text-xl font-bold text-[hsl(var(--navy))] mb-5 flex items-center gap-2">
-                        <Icon name="AlertTriangle" size={18} className="text-red-400" />
-                        Частые ошибки СФР
-                      </h4>
-                      <ul className="space-y-3">
-                        {tab.mistakes.map((m, i) => (
-                          <li key={i} className="flex items-start gap-3 text-sm text-gray-700 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
-                            <Icon name="X" size={14} className="text-red-400 flex-shrink-0 mt-0.5" />
-                            {m}
-                          </li>
-                        ))}
-                      </ul>
-
-                      <div className="mt-6 bg-[hsl(var(--gold))]/10 border border-[hsl(var(--gold))]/25 rounded-2xl p-5">
-                        <p className="text-sm text-gray-700 mb-4">
-                          Узнайте, правильно ли оформлен ваш стаж — бесплатная первичная консультация
-                        </p>
-                        <button
-                          onClick={() => scrollTo("#contacts")}
-                          className="w-full py-3 bg-[hsl(var(--navy))] text-white font-semibold rounded-xl hover:opacity-90 transition-all text-sm"
-                        >
-                          Проверить мои права
-                        </button>
+                    {/* Media files */}
+                    {mediaFiles.length > 0 && (
+                      <div className="px-8 md:px-12 pb-10">
+                        <h4 className="font-display text-xl font-bold text-[hsl(var(--navy))] mb-5 flex items-center gap-2">
+                          <Icon name="Paperclip" size={18} className="text-gray-400" />
+                          Материалы и документы
+                        </h4>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          {mediaFiles.map((f) => (
+                            <a
+                              key={f.id}
+                              href={f.file_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="group border border-gray-100 rounded-2xl overflow-hidden bg-white hover:shadow-md transition-all"
+                            >
+                              {f.file_type === "image" && (
+                                <img src={f.file_url} alt={f.file_name} className="w-full h-24 object-cover" />
+                              )}
+                              {f.file_type === "video" && (
+                                <div className="h-24 bg-[hsl(var(--navy))]/10 flex items-center justify-center">
+                                  <Icon name="Play" size={28} className="text-[hsl(var(--navy))]" />
+                                </div>
+                              )}
+                              {f.file_type === "pdf" && (
+                                <div className="h-24 bg-red-50 flex items-center justify-center">
+                                  <Icon name="FileText" size={28} className="text-red-400" />
+                                </div>
+                              )}
+                              <div className="p-2 flex items-center gap-1.5">
+                                <Icon name="ExternalLink" size={11} className="text-gray-400 flex-shrink-0" />
+                                <p className="text-xs text-gray-600 truncate">{f.file_name}</p>
+                              </div>
+                            </a>
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
-              </div>
-            )
+              );
+            })
           )}
         </div>
       </section>

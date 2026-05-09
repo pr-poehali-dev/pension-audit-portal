@@ -1,0 +1,12 @@
+{
+  "tests": [
+    {
+      "name": "GET media for tab",
+      "method": "GET",
+      "path": "/?tab_id=north",
+      "expectedStatus": 200,
+      "expectedBody": [],
+      "bodyMatcher": "partial"
+    }
+  ]
+}

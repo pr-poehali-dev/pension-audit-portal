@@ -1,0 +1,20 @@
+{
+  "tests": [
+    {
+      "name": "GET all tabs",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": [],
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "GET single tab",
+      "method": "GET",
+      "path": "/?tab_id=north",
+      "expectedStatus": 200,
+      "expectedBody": {"tab_id": "north"},
+      "bodyMatcher": "partial"
+    }
+  ]
+}

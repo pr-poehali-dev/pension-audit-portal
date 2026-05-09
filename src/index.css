@@ -142,3 +142,33 @@
     margin: 12px auto 0;
   }
 }
+
+@media print {
+  nav,
+  footer,
+  #hero,
+  #about,
+  #services,
+  #calculator,
+  #reviews,
+  #faq,
+  #contacts {
+    display: none !important;
+  }
+  #pension-types {
+    padding: 0 !important;
+  }
+  .animate-on-scroll {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  body {
+    background: white !important;
+    font-size: 12pt;
+  }
+  .rounded-3xl,
+  .rounded-2xl,
+  .rounded-xl {
+    border-radius: 4px !important;
+  }
+}
