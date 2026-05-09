@@ -53,6 +53,7 @@ const navItems = [
   { label: "Главная", href: "#hero" },
   { label: "О нас", href: "#about" },
   { label: "Услуги", href: "#services" },
+  { label: "Виды пенсии", href: "#pension-types" },
   { label: "Калькулятор", href: "#calculator" },
   { label: "Отзывы", href: "#reviews" },
   { label: "FAQ", href: "#faq" },
@@ -95,6 +96,118 @@ const services = [
     title: "Проверка льготного стажа",
     desc: "Анализ права на досрочную пенсию по профессии, вредности или особым условиям труда.",
     price: "от 4 000 ₽",
+  },
+];
+
+const pensionTabs = [
+  {
+    id: "north",
+    label: "Северяне",
+    icon: "Snowflake",
+    title: "Пенсия для жителей Крайнего Севера",
+    subtitle: "Досрочный выход и повышенный коэффициент",
+    description: "Граждане, работавшие в районах Крайнего Севера или приравненных к ним местностях, имеют право на досрочную пенсию и применение районного коэффициента к её размеру.",
+    conditions: [
+      "Мужчины: стаж на севере от 15 лет, общий стаж от 25 лет → пенсия с 55 лет",
+      "Женщины: стаж на севере от 15 лет, общий стаж от 20 лет → пенсия с 50 лет",
+      "Приравненные местности: стаж от 20 лет засчитывается как 15 лет северного",
+      "Районный коэффициент увеличивает фиксированную выплату к пенсии",
+      "При переезде в другой регион коэффициент может сохраняться или изменяться",
+    ],
+    mistakes: [
+      "СФР не засчитывает периоды вахтовой работы как северный стаж",
+      "Ошибки в наименовании местности в трудовой книжке",
+      "Неверный учёт районного коэффициента после переезда",
+    ],
+    badge: "Досрочно — с 50/55 лет",
+    badgeColor: "blue",
+  },
+  {
+    id: "privilege",
+    label: "Льготный стаж",
+    icon: "Star",
+    title: "Пенсия по льготному стажу",
+    subtitle: "Вредные и особые условия труда",
+    description: "Работа в особых условиях труда даёт право выйти на пенсию раньше общеустановленного возраста. Основание — Списки № 1 и № 2, утверждённые Постановлением Кабинета Министров СССР.",
+    conditions: [
+      "Список № 1 — особо вредные условия: мужчины с 50 лет (10 лет спецстажа), женщины с 45 лет (7,5 лет)",
+      "Список № 2 — вредные условия: мужчины с 55 лет (12,5 лет), женщины с 50 лет (10 лет)",
+      "Каждый год сверх минимума спецстажа снижает пенсионный возраст на год",
+      "Периоды до 1992 года учитываются по советским спискам",
+    ],
+    mistakes: [
+      "Работодатель не подавал сведения по форме СЗВ-СТАЖ с кодом льготы",
+      "Наименование должности не соответствует Спискам — хотя условия труда те же",
+      "Периоды простоя и учёбы неправомерно исключены из спецстажа",
+    ],
+    badge: "Список 1 и Список 2",
+    badgeColor: "amber",
+  },
+  {
+    id: "teachers",
+    label: "Учителя",
+    icon: "GraduationCap",
+    title: "Досрочная пенсия педагогов",
+    subtitle: "25 лет педагогической деятельности",
+    description: "Педагогические работники вправе выйти на досрочную пенсию при наличии 25 лет стажа педагогической деятельности в государственных и муниципальных учреждениях. Возраст выхода при этом не ограничен.",
+    conditions: [
+      "Стаж педагогической деятельности — 25 лет (не общий трудовой)",
+      "Работа в школах, детских садах, домах детского творчества и др. учреждениях из Перечня",
+      "Должность должна входить в утверждённый Перечень (учитель, воспитатель, логопед и др.)",
+      "Периоды до 1999 г. — учитываются по старым правилам",
+      "С 2019 г. введена отсрочка: право возникает на 5 лет позже накопленного стажа",
+    ],
+    mistakes: [
+      "Должность оформлена как «педагог» вместо «учитель» — отказ в зачёте",
+      "Учреждение не включено в Перечень, хотя фактически является образовательным",
+      "Период декретного отпуска после 6 октября 1992 г. не засчитан",
+    ],
+    badge: "25 лет педстажа",
+    badgeColor: "green",
+  },
+  {
+    id: "doctors",
+    label: "Медики",
+    icon: "Stethoscope",
+    title: "Досрочная пенсия медицинских работников",
+    subtitle: "30 лет в городе / 25 лет в селе",
+    description: "Медицинские работники имеют право на досрочную пенсию при выработке специального стажа. Год работы в сельской местности или посёлке городского типа засчитывается как 1 год 3 месяца.",
+    conditions: [
+      "Стаж в городе — 30 лет лечебной деятельности",
+      "Стаж в сельской местности — 25 лет (с льготным исчислением)",
+      "Должность и учреждение — из утверждённого Перечня",
+      "Хирурги, анестезиологи, реаниматологи — год за 1,5 (при определённых условиях)",
+      "С 2019 г. — отсрочка: право наступает через 5 лет после выработки стажа",
+    ],
+    mistakes: [
+      "Должность не соответствует Перечню: «фельдшер» вместо «врач» или наоборот",
+      "Периоды учёбы и курсов повышения квалификации исключены из стажа",
+      "Работа в частной клинике не учтена, хотя учреждение имело лицензию",
+    ],
+    badge: "25–30 лет медстажа",
+    badgeColor: "red",
+  },
+  {
+    id: "mvd",
+    label: "МВД / МЧС",
+    icon: "Shield",
+    title: "Пенсия сотрудников МВД и МЧС",
+    subtitle: "Ведомственная пенсия за выслугу лет",
+    description: "Сотрудники МВД, МЧС, ФСИН и других силовых структур получают пенсию по линии своего ведомства — она рассчитывается по особым правилам и не зависит от ПФР/СФР.",
+    conditions: [
+      "Выслуга 20 лет и более → пенсия за выслугу лет",
+      "Смешанный стаж: 25 лет общего, из которых 12,5 лет — в силовых структурах",
+      "Размер: 50% от денежного довольствия + 3% за каждый год сверх 20 лет (до 85%)",
+      "Дополнительно: надбавки за инвалидность, участие в боевых действиях",
+      "Гражданская пенсия от СФР — если есть страховые взносы после увольнения",
+    ],
+    mistakes: [
+      "Неверно учтены периоды службы в горячих точках (должны идти как двойной стаж)",
+      "Ошибки в расчёте денежного довольствия, принимаемого за базу пенсии",
+      "Не учтены надбавки за особые условия службы",
+    ],
+    badge: "За выслугу лет",
+    badgeColor: "navy",
   },
 ];
 
@@ -161,6 +274,7 @@ export default function Index() {
   }, []);
 
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState("north");
 
   const [calc, setCalc] = useState({ age: 60, salary: 50000, years: 30 });
   const pension = Math.round(
@@ -384,6 +498,114 @@ export default function Index() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* PENSION TYPES TABS */}
+      <section id="pension-types" className="py-24 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-14 animate-on-scroll">
+            <p className="text-xs font-semibold tracking-widest text-[hsl(var(--gold))] uppercase mb-3">Специализация</p>
+            <h2 className="font-display text-4xl md:text-5xl font-bold text-[hsl(var(--navy))] mb-4 gold-line-center">
+              Виды льготной пенсии
+            </h2>
+            <p className="text-gray-500 max-w-xl mx-auto mt-6">
+              Выберите категорию — узнайте условия, типичные ошибки СФР и как мы помогаем их исправить
+            </p>
+          </div>
+
+          {/* Tab buttons */}
+          <div className="animate-on-scroll mb-8 overflow-x-auto pb-2">
+            <div className="flex gap-2 min-w-max mx-auto w-fit">
+              {pensionTabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold transition-all whitespace-nowrap border ${
+                    activeTab === tab.id
+                      ? "bg-[hsl(var(--navy))] text-white border-[hsl(var(--navy))] shadow-lg"
+                      : "bg-white text-[hsl(var(--navy))] border-gray-200 hover:border-[hsl(var(--navy))]/40 hover:bg-gray-50"
+                  }`}
+                >
+                  <Icon name={tab.icon} size={16} className={activeTab === tab.id ? "text-[hsl(var(--gold))]" : "text-gray-400"} />
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Tab content */}
+          {pensionTabs.map((tab) =>
+            activeTab !== tab.id ? null : (
+              <div key={tab.id} className="animate-on-scroll">
+                <div className="bg-[hsl(var(--cream))] rounded-3xl overflow-hidden border border-gray-100 shadow-sm">
+                  {/* Header */}
+                  <div className="bg-[hsl(var(--navy))] px-8 md:px-12 py-10">
+                    <div className="flex flex-col md:flex-row md:items-center gap-6">
+                      <div className="w-16 h-16 bg-[hsl(var(--gold))]/20 rounded-2xl flex items-center justify-center flex-shrink-0">
+                        <Icon name={tab.icon} size={30} className="text-[hsl(var(--gold))]" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="inline-block px-3 py-1 bg-[hsl(var(--gold))]/20 border border-[hsl(var(--gold))]/30 rounded-full text-[hsl(var(--gold))] text-xs font-semibold mb-3">
+                          {tab.badge}
+                        </div>
+                        <h3 className="font-display text-3xl font-bold text-white mb-1">{tab.title}</h3>
+                        <p className="text-blue-200 text-sm">{tab.subtitle}</p>
+                      </div>
+                    </div>
+                    <p className="text-blue-100 mt-6 leading-relaxed text-sm md:text-base">{tab.description}</p>
+                  </div>
+
+                  {/* Body */}
+                  <div className="px-8 md:px-12 py-10 grid md:grid-cols-2 gap-10">
+                    <div>
+                      <h4 className="font-display text-xl font-bold text-[hsl(var(--navy))] mb-5 flex items-center gap-2">
+                        <Icon name="CheckCircle" size={18} className="text-[hsl(var(--gold))]" />
+                        Условия назначения
+                      </h4>
+                      <ul className="space-y-3">
+                        {tab.conditions.map((c, i) => (
+                          <li key={i} className="flex items-start gap-3 text-sm text-gray-700">
+                            <span className="w-5 h-5 bg-[hsl(var(--gold))]/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 text-[hsl(var(--gold))] text-xs font-bold">
+                              {i + 1}
+                            </span>
+                            {c}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h4 className="font-display text-xl font-bold text-[hsl(var(--navy))] mb-5 flex items-center gap-2">
+                        <Icon name="AlertTriangle" size={18} className="text-red-400" />
+                        Частые ошибки СФР
+                      </h4>
+                      <ul className="space-y-3">
+                        {tab.mistakes.map((m, i) => (
+                          <li key={i} className="flex items-start gap-3 text-sm text-gray-700 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
+                            <Icon name="X" size={14} className="text-red-400 flex-shrink-0 mt-0.5" />
+                            {m}
+                          </li>
+                        ))}
+                      </ul>
+
+                      <div className="mt-6 bg-[hsl(var(--gold))]/10 border border-[hsl(var(--gold))]/25 rounded-2xl p-5">
+                        <p className="text-sm text-gray-700 mb-4">
+                          Узнайте, правильно ли оформлен ваш стаж — бесплатная первичная консультация
+                        </p>
+                        <button
+                          onClick={() => scrollTo("#contacts")}
+                          className="w-full py-3 bg-[hsl(var(--navy))] text-white font-semibold rounded-xl hover:opacity-90 transition-all text-sm"
+                        >
+                          Проверить мои права
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )
+          )}
         </div>
       </section>
 
